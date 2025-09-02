@@ -5,15 +5,15 @@ from dotenv import load_dotenv
 
 # API Key aus .env-Datei laden
 load_dotenv()
-api_key = os.getenv("SPOONACULAR_KEY")
+API_KEY = os.getenv("SPOONACULAR_KEY")
 
-base_url = "https://api.spoonacular.com/recipes"
+BASE_URL = "https://api.spoonacular.com/recipes"
 
 # Rezept anhand Suchbegriffes suchen
 def search_recipes(name, number):
-    url = f"{base_url}/complexSearch"
+    url = f"{BASE_URL}/complexSearch"
     params = {
-        "apiKey": api_key,
+        "apiKey": API_KEY,
         "query": name,  # Suchbegriff
         "number": number    # Ergebnisanzahl
     }
@@ -29,9 +29,10 @@ def search_recipes(name, number):
 
 # Rezeptdetails abrufen
 def get_recipe_details(id):
-    url = f"{base_url}/{id}/information"
+    url = f"{BASE_URL}/{id}/information"
     params = {
-        "apiKey": api_key,
+        "apiKey": API_KEY,
+        "addRecipeInformation": True,
         # TODO noch weitere Parameter für die Rezeptdetails anzeigen (Zubereitung, Kalorien, Portionen, etc.)
     }
     
@@ -40,19 +41,29 @@ def get_recipe_details(id):
     if response.status_code == 200:
         data = response.json()
         ingredients = [ingre["original"] for ingre in data.get("extendedIngredients", [])]  # 'original' --> formatierter Text
-        return ingredients
+        servings = data.get("servings", "no serving information")
+        instrucions = data.get("instructions", "no Instructions")
+        
+        instruction_steps = []
+        for instr in data.get("analyzedInstructions", []):
+            for step in instr.get("steps", []):
+                instruction_steps.append(step["step"])    
+        if not instruction_steps:
+            instruction_steps = [data.get("instructions", "no instructions")]
+            
+        return ingredients, servings, instruction_steps
     else:
         streamlit.error(f"API-Anfragefehler: {response.status_code}")
-        return []
+        return [],[],[]
 
 
 # Streamlit-UI
 streamlit.title("Spoonacular Recipe Finder")
-query = streamlit.text_input("Rezept suchen", "Pasta")  # Suchfeld
-max_results = streamlit.slider("Anzahl der Ergebnisse", 1, 20, 5)   # Slider Ergebnisanzahl
+query = streamlit.text_input("Search recipe", "Pasta")  # Suchfeld
+max_results = streamlit.slider("Number of results", 1, 20, 5)   # Slider Ergebnisanzahl
 
 # Button suchen von Rezepten
-if streamlit.button("Rezepte finden"):
+if streamlit.button("Search recipes"):
     streamlit.session_state["recipes"] = search_recipes(query, number = max_results)    # Aufruf der Suchfunktion
 
     
@@ -63,15 +74,26 @@ if "recipes" in streamlit.session_state:
         streamlit.image(rec["image"], width=300)
         
         # Button Rezeptdetails anzeigen
-        if streamlit.button(f"Rezeptdetails zu {rec['title']}", key=rec["id"]):
-            ingredients = get_recipe_details(rec["id"]) # Aufruf Detailanzeige Funktion
-            if ingredients:
-                streamlit.write("### Zutaten")
+        with streamlit.expander("Show recipe details"):
+            ingredients, servings, instructions = get_recipe_details(rec["id"]) # Aufruf Detailanzeige Funktion
+            if ingredients or servings or instructions:
+                streamlit.write("### Ingredients")
                 for ingre in ingredients:
                     if isinstance(ingre, dict):
                         streamlit.write("- ", ingre["original"])    # falls dict
                     else:
                         streamlit.write("-", ingre) # falls String
+                streamlit.write("### Servings")
+                streamlit.write(servings)
+                streamlit.write("### Instructions")
+                if isinstance(instructions, list):
+                    for i, step in enumerate(instructions, start=1):
+                        streamlit.markdown(f"{i}. {step}")
+                else:
+                    streamlit.markdown(instructions, unsafe_allow_html=True)
+                        
+                        
+                        
     
     
         
