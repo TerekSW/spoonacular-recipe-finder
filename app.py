@@ -25,7 +25,7 @@ def search_recipes(name, number):
     if response.status_code == 200:
         return response.json().get("results", []) # Rückgabe der Suchtreffer
     else:
-        streamlit.error(f"API-Anfragefehler: {response.status_code}")
+        streamlit.error(f"API-Error: {response.status_code}")
         return []
 
 # Rezeptdetails abrufen
@@ -33,29 +33,16 @@ def get_recipe_details(id):
     url = f"{BASE_URL}/{id}/information"
     params = {
         "apiKey": API_KEY,
-        "addRecipeInformation": True,
-        # TODO noch weitere Parameter für die Rezeptdetails anzeigen (Zubereitung, Kalorien, Portionen, etc.)
+        "includeNutrition": False,  # Nährwertangaben nicht darstellen
     }
     
     response = requests.get(url, params=params)
     
     if response.status_code == 200:
-        data = response.json()
-        ingredients = [ingre["original"] for ingre in data.get("extendedIngredients", [])]  # 'original' --> formatierter Text
-        servings = data.get("servings", "no serving information")
-        instrucions = data.get("instructions", "no Instructions")
-        
-        instruction_steps = []
-        for instr in data.get("analyzedInstructions", []):
-            for step in instr.get("steps", []):
-                instruction_steps.append(step["step"])    
-        if not instruction_steps:
-            instruction_steps = [data.get("instructions", "no instructions")]
-            
-        return ingredients, servings, instruction_steps
+        return response.json()
     else:
-        streamlit.error(f"API-Anfragefehler: {response.status_code}")
-        return [],[],[]
+        streamlit.error(f"API-Error: {response.status_code}")
+        return []
 
 
 # Streamlit-UI
@@ -76,26 +63,31 @@ if "recipes" in streamlit.session_state:
         
         # Button Rezeptdetails anzeigen
         with streamlit.expander("Show recipe details"):
-            ingredients, servings, instructions = get_recipe_details(rec["id"]) # Aufruf Detailanzeige Funktion
-            if ingredients or servings or instructions:
-                streamlit.write("### Ingredients")
-                for ingre in ingredients:
-                    if isinstance(ingre, dict):
-                        streamlit.write("- ", ingre["original"])    # falls dict
-                    else:
-                        streamlit.write("-", ingre) # falls String
+            detail = get_recipe_details(rec["id"])
+            if detail:
+                for ingre in detail.get("extendedIngredients", []):
+                    streamlit.write("- ", ingre["original"])
+            
                 streamlit.write("### Servings")
-                streamlit.write(servings)
+                streamlit.write(detail.get("servings", "no serving information"))
+                
                 streamlit.write("### Instructions")
-                if isinstance(instructions, list):
+                instructions = []
+                for ins in detail.get("analyzedInstructions", []):
+                    for step in ins.get("steps", []):
+                        instructions.append(step["step"])
+                if instructions:
                     for i, step in enumerate(instructions, start=1):
-                        streamlit.markdown(f"{i}. {step}")
+                        streamlit.markdown(f"{i}.  {step}")
                 else:
-                    streamlit.markdown(instructions, unsafe_allow_html=True)
-        if streamlit.button(f"Save recipe as favorite: {rec['title']}", key=f"favorite{rec['id']}"):
-            details = requests.get(f"{BASE_URL}/{rec['id']}/information", params={"apiKey":API_KEY}).json()
-            save_favorite_recipes(rec["id"], details)
-            streamlit.success(f"{rec['title']} has been saved as a favorite!")
+                    streamlit.markdown(detail.get("instructions", "no instructions"))
+        if streamlit.button(f"Save recipe: " + rec['title'], key=f"fav{rec['id']}"):
+            detail = get_recipe_details(rec["id"])
+            if detail:
+                save_favorite_recipes(rec["id"], detail)
+                streamlit.success(f"{rec['title']} has been saved!")
+            
+    
                         
                         
                         
