@@ -2,6 +2,7 @@ import os
 import requests
 import streamlit
 from dotenv import load_dotenv
+from db import save_favorite_recipes, get_favorite_recipes
 
 # API Key aus .env-Datei laden
 load_dotenv()
@@ -91,6 +92,10 @@ if "recipes" in streamlit.session_state:
                         streamlit.markdown(f"{i}. {step}")
                 else:
                     streamlit.markdown(instructions, unsafe_allow_html=True)
+        if streamlit.button(f"Save recipe as favorite: {rec['title']}", key=f"favorite{rec['id']}"):
+            details = requests.get(f"{BASE_URL}/{rec['id']}/information", params={"apiKey":API_KEY}).json()
+            save_favorite_recipes(rec["id"], details)
+            streamlit.success(f"{rec['title']} has been saved as a favorite!")
                         
                         
                         
