@@ -29,16 +29,19 @@ favorite_recipes = Table(
 metadata.create_all(engine)
 
 def save_favorite_recipes(recipe_id, details):
-    with engine.connect() as con:
-        insert_stmt = favorite_recipes.insert().values(
-            id = recipe_id,
-            title = details["title"],
-            servings = details["servings"],
-            cuisine = details.get("cuisines", [""])[0] if details.get("cuisines") else None, # optionaler Wert
-            dish_type = details.get("dish_type", [""])[0] if details.get("dish_type") else None, # optionaler Wert
-            source_url = details.get("sourceUrl")
-        )
-        con.execute(insert_stmt)
+    try:
+        with engine.begin() as con:
+            insert_stmt = favorite_recipes.insert().values(
+                id = recipe_id,
+                title = details["title"],
+                servings = details["servings"],
+                cuisine = details.get("cuisines", [""])[0] if details.get("cuisines") else None, # optionaler Wert
+                dish_type = details.get("dishTypes", [""])[0] if details.get("dishTypes") else None, # optionaler Wert
+                source_url = details.get("sourceUrl")
+            )
+            con.execute(insert_stmt)
+    except Exception as ex:
+        print(f"Error while saving: {ex}")
 
 def get_favorite_recipes():
     with engine.connect() as con:
