@@ -1,8 +1,9 @@
 import os
 import requests
 import streamlit
+import pandas as pd
 from dotenv import load_dotenv
-from db import save_favorite_recipes, get_favorite_recipes
+from db import save_favorite_recipes, get_favorite_recipes, delete_favorite_recipe
 
 # API Key aus .env-Datei laden
 load_dotenv()
@@ -53,8 +54,24 @@ max_results = streamlit.slider("Number of results", 1, 20, 5)   # Slider Ergebni
 # Button suchen von Rezepten
 if streamlit.button("Search recipes"):
     streamlit.session_state["recipes"] = search_recipes(query, number = max_results)    # Aufruf der Suchfunktion
-
     
+if streamlit.button("Show saved recipes"):
+    streamlit.session_state["favorites"] = get_favorite_recipes()
+if "favorites" in streamlit.session_state:
+    favorites = streamlit.session_state["favorites"]
+    df = pd.DataFrame(favorites)
+    streamlit.dataframe(df)
+    id = [fav[0] for fav in favorites]
+    selected_id = streamlit.selectbox("Delete chosen recipe", id)
+    
+    if streamlit.button("Delete recipe"):
+        delete_favorite_recipe(selected_id)
+        streamlit.success(f"Recipe {selected_id} deleted!")     
+        
+        streamlit.session_state["favorites"] = get_favorite_recipes()       
+else:
+    streamlit.info("no saved recipes")
+
 if "recipes" in streamlit.session_state:
     # Anzeige Rezepttitel und Bild
     for rec in streamlit.session_state["recipes"]:
@@ -87,7 +104,8 @@ if "recipes" in streamlit.session_state:
                 save_favorite_recipes(rec["id"], detail)
                 streamlit.success(f"{rec['title']} has been saved!")
             
-    
+
+
                         
                         
                         
