@@ -47,3 +47,12 @@ def get_favorite_recipes():
     with engine.connect() as con:
         result = con.execute(favorite_recipes.select())
         return result.fetchall()
+    
+def delete_favorite_recipe(recipe_id):
+    try:
+        with engine.begin() as con:
+            delete_stmt = favorite_recipes.delete().where(favorite_recipes.c.id == recipe_id)
+            con.execute(delete_stmt)
+    except Exception as ex:
+        print(f"Error while deleting: {ex}")
+        
