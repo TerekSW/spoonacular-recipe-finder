@@ -46,7 +46,7 @@ def get_recipe_details(id):
         return []
 
 
-# Streamlit-UI
+# Streamlit
 streamlit.title("Spoonacular Recipe Finder")
 query = streamlit.text_input("Search recipe", "Pasta")  # Suchfeld
 max_results = streamlit.slider("Number of results", 1, 20, 5)   # Slider Ergebnisanzahl
