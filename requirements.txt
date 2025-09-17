@@ -1,0 +1,17 @@
+# Web app framework
+streamlit>=1.34
+
+# HTTP requests to Spoonacular API
+requests>=2.31
+
+# Load environment variables from .env file
+python-dotenv>=1.0
+
+# Database ORM
+SQLAlchemy>=2.0
+
+# PostgreSQL driver (binary build, easiest for development)
+psycopg2-binary>=2.9
+
+# Data analysis / display tables
+pandas>=2.0

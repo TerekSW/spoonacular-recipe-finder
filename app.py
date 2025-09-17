@@ -34,7 +34,7 @@ def get_recipe_details(id):
     url = f"{BASE_URL}/{id}/information"
     params = {
         "apiKey": API_KEY,
-        "includeNutrition": False,  # Nährwertangaben nicht darstellen
+        "includeNutrition": False,  # (optional) Nährwertangaben nicht darstellen
     }
     
     response = requests.get(url, params=params)
