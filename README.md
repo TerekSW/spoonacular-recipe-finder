@@ -12,13 +12,13 @@ Features include:
 ---
 
 
-## Demo (local)
+# Demo (local)
 
-# 1. Clone the repository 
+## 1. Clone the repository 
 ```bash
 git clone https://github.com/TerekSW/spoonacular-recipe-finder
 ```
-# 2. (Optional) create virtual environment
+## 2. (Optional) create virtual environment
 ```bash
 python -m venv .venv
 # Windows
@@ -26,34 +26,33 @@ python -m venv .venv
 # macOS/Linux
 source .venv/bin/activate
 ```
-# 3. Install dependencies
+## 3. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
-# 4. Add configuration file (.env) (see below)
+## 4. Add configuration file (.env) (see below)
 
 
-## Configuration (.env)
+# Configuration (.env)
 
-# Spoonacular API
-
+## Spoonacular API
+```env
 SPOONACULAR_KEY=your_api_key 
-
-# PostgreSQL
-
+```
+## PostgreSQL
+```env
 DB_USER=postgres
 DB_PASSWORD=your_password
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=recipedb
-
-# Get your free API-Key [here](https://spoonacular.com/food-api) 
+```
+## Get your free API-Key [here](https://spoonacular.com/food-api) 
 
 ⚠️ Do not commit .env to GitHub (add to .gitignore).
 
-## Database setup (PostgreSQL)
+# Database setup (PostgreSQL)
 
-Login to PostgreSQL:
 ```bash
 psql -U postgres -d postgres
 
@@ -64,7 +63,7 @@ CREATE DATABASE recipedb;
 streamlit run app.py
 ```
 
-## Requirements 
+# Requirements 
 
 Install with:
 ```bash
