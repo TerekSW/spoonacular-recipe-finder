@@ -72,9 +72,11 @@ pip install -r requirements.txt
 
 Contents of requirements.txt:
 
+```txt
 streamlit>=1.34
 requests>=2.31
 python-dotenv>=1.0
 SQLAlchemy>=2.0
 psycopg2-binary>=2.9
 pandas>=2.0
+```
